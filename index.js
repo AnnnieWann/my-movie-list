@@ -1,56 +1,92 @@
 const BASE_URL = "https://webdev.alphacamp.io";
 const INDEX_URL = BASE_URL + "/api/movies/";
 const POSTER_URL = BASE_URL + "/posters/";
-const MOVIE_PER_PAGE = 12;
 
 const movies = [];
 let filteredMovies = [];
+
+const MOVIE_PER_PAGE = 12;
+let currentPage = 1;
 
 const dataPanel = document.querySelector("#data-panel");
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
 const paginator = document.querySelector("#paginator");
+const modeChangeSwitch = document.querySelector("#change-mode");
 
 //display movie list
 function renderMovieList(data) {
-  let HTMLContent = "";
+  if (dataPanel.dataset.mode === "card-mode") {
+    let HTMLContent = "";
 
-  data.forEach((item) => {
-    HTMLContent += `
-            <div class="col-sm-3">
-                <div class="mb-2">
-                    <div class="card">
-                        <img
-                        src="${POSTER_URL + item.image}"
-                        class="card-img-top"
-                        alt="Movie Poster"
-                        />
-                        <div class="card-body">
-                        <h5 class="card-title">${item.title}</h5>
-                        </div>
-                        <div class="card-footer">
-                            <button 
-                                class="btn btn-primary btn-show-movie" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#movie-modal" 
-                                data-id="${item.id}"
-                            >
-                            More
-                            </button>
-                            <button 
-                                class="btn btn-info btn-add-favorite" 
-                                data-id="${item.id}"
-                            >
-                            +
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-  });
+    data.forEach((item) => {
+      HTMLContent += `
+              <div class="col-sm-3">
+                  <div class="mb-2">
+                      <div class="card">
+                          <img
+                          src="${POSTER_URL + item.image}"
+                          class="card-img-top"
+                          alt="Movie Poster"
+                          />
+                          <div class="card-body">
+                          <h5 class="card-title">${item.title}</h5>
+                          </div>
+                          <div class="card-footer">
+                              <button
+                                  class="btn btn-primary btn-show-movie"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#movie-modal"
+                                  data-id="${item.id}"
+                              >
+                              More
+                              </button>
+                              <button
+                                  class="btn btn-info btn-add-favorite"
+                                  data-id="${item.id}"
+                              >
+                              +
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          `;
+    });
+    dataPanel.innerHTML = HTMLContent;
+  } else if (dataPanel.dataset.mode === "list-mode") {
+    let HTMLContent = "";
 
-  dataPanel.innerHTML = HTMLContent;
+    data.forEach((item) => {
+      HTMLContent += `
+        <div class="border-top row mt-3 py-2">
+          <h5 class="col-8">${item.title}</h5>
+          <div class="col-4">
+            <button 
+            class="btn btn-primary btn-show-movie" 
+            data-bs-toggle="modal" 
+            data-bs-target="#movie-modal" 
+            data-id="${item.id}"
+            >
+            More
+            </button>
+            <button 
+                class="btn btn-info btn-add-favorite" 
+                data-id="${item.id}"
+            >
+            +
+            </button>
+          </div>
+        </div>
+          `;
+    });
+    dataPanel.innerHTML = HTMLContent;
+  }
+}
+
+function changeDisplayMode(displayMode) {
+  if (dataPanel.dataset.mode === displayMode) return;
+  dataPanel.dataset.mode = displayMode;
 }
 
 function displayMovieModal(id) {
@@ -70,6 +106,21 @@ function displayMovieModal(id) {
   });
 }
 
+function getMovieByPage(page) {
+  const data = filteredMovies.length ? filteredMovies : movies;
+  const startingIndex = (page - 1) * MOVIE_PER_PAGE;
+  return data.slice(startingIndex, startingIndex + MOVIE_PER_PAGE);
+}
+
+function renderPaginator(amount) {
+  const numOfPages = Math.ceil(amount / MOVIE_PER_PAGE);
+  let HTMLContent = "";
+  for (let page = 1; page <= numOfPages; page++) {
+    HTMLContent += `<button class="btn" data-id="${page}">${page}</button>`;
+  }
+  paginator.innerHTML = HTMLContent;
+}
+
 function addToFavourite(id) {
   const list = JSON.parse(localStorage.getItem("favouriteMovies")) || [];
   const movie = movies.find((movie) => movie.id === id);
@@ -80,12 +131,6 @@ function addToFavourite(id) {
   list.push(movie);
   console.log(list);
   localStorage.setItem("favouriteMovies", JSON.stringify(list));
-}
-
-function getMovieByPage(page) {
-  const data = filteredMovies.length ? filteredMovies : movies;
-  const startingIndex = (page - 1) * MOVIE_PER_PAGE;
-  return data.slice(startingIndex, startingIndex + MOVIE_PER_PAGE);
 }
 
 dataPanel.addEventListener("click", function onPanelClicked(event) {
@@ -109,17 +154,18 @@ searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
   }
 
   renderPaginator(filteredMovies.length);
-  renderMovieList(getMovieByPage(1));
+  renderMovieList(getMovieByPage(currentPage));
 });
 
-function renderPaginator(amount) {
-  const numOfPages = Math.ceil(amount / MOVIE_PER_PAGE);
-  let HTMLContent = "";
-  for (let page = 1; page <= numOfPages; page++) {
-    HTMLContent += `<li class="page-item"><a class="page-link" href="#" data-id="${page}">${page}</a></li>`;
+modeChangeSwitch.addEventListener("click", function onSwitchClicked(event) {
+  if (event.target.matches("#card-mode-button")) {
+    changeDisplayMode("card-mode");
+    renderMovieList(getMovieByPage(currentPage));
+  } else if (event.target.matches("#list-mode-button")) {
+    changeDisplayMode("list-mode");
+    renderMovieList(getMovieByPage(currentPage));
   }
-  paginator.innerHTML = HTMLContent;
-}
+});
 
 paginator.addEventListener("click", function onPaginatorClicked(event) {
   if (event.target.tagName !== "A") return;
@@ -133,7 +179,7 @@ axios
   .get(INDEX_URL)
   .then(function (response) {
     movies.push(...response.data.results);
-    renderMovieList(getMovieByPage(1));
+    renderMovieList(getMovieByPage(currentPage));
     renderPaginator(movies.length);
   })
   .catch(function (error) {
