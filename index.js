@@ -13,6 +13,7 @@ const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
 const paginator = document.querySelector("#paginator");
 const modeChangeSwitch = document.querySelector("#change-mode");
+const alertMessage = document.querySelector(".alert-msg");
 
 //display movie list
 function renderMovieList(data) {
@@ -116,7 +117,7 @@ function renderPaginator(amount) {
   const numOfPages = Math.ceil(amount / MOVIE_PER_PAGE);
   let HTMLContent = "";
   for (let page = 1; page <= numOfPages; page++) {
-    HTMLContent += `<button class="btn" data-id="${page}">${page}</button>`;
+    HTMLContent += `<li class="page-item"><a class="page-link" href="#" data-id="${page}">${page}</a></li>`;
   }
   paginator.innerHTML = HTMLContent;
 }
@@ -125,11 +126,10 @@ function addToFavourite(id) {
   const list = JSON.parse(localStorage.getItem("favouriteMovies")) || [];
   const movie = movies.find((movie) => movie.id === id);
   if (list.some((movie) => movie.id === id)) {
-    return alert("The selected movie is already in favourite list");
+    return alert("The movie is already in favourite list");
   }
 
   list.push(movie);
-  console.log(list);
   localStorage.setItem("favouriteMovies", JSON.stringify(list));
 }
 
