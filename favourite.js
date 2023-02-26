@@ -7,6 +7,7 @@ const movies = JSON.parse(localStorage.getItem("favouriteMovies")) || [];
 const dataPanel = document.querySelector("#data-panel");
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
+const emptyMessage = document.querySelector("#if-list-empty");
 
 //display movie list
 function renderMovieList(data) {
@@ -48,6 +49,10 @@ function renderMovieList(data) {
   });
 
   dataPanel.innerHTML = HTMLContent;
+
+  if (data.length === 0) {
+    return emptyMessage.classList.remove("d-none");
+  }
 }
 
 function displayMovieModal(id) {
@@ -68,8 +73,6 @@ function displayMovieModal(id) {
 }
 
 function removeFromFavourite(id) {
-  if (!movies || !movies.length) return;
-
   const movieIndex = movies.findIndex((movie) => movie.id === id);
   if (movieIndex === -1) return;
 
@@ -81,6 +84,10 @@ function removeFromFavourite(id) {
   localStorage.setItem("favouriteMovies", JSON.stringify(movies));
   //re-render movie item display
   renderMovieList(movies);
+
+  if (!movies || !movies.length) {
+    return emptyMessage.classList.remove("d-none");
+  }
 }
 
 dataPanel.addEventListener("click", function onPanelClicked(event) {
