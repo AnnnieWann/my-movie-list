@@ -34,6 +34,6 @@ To run the website locally, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/AnnnieWann/my-movie-list.git`
 
-2. Navigate to the project directory: `cd <repository>`
+2. Navigate to the project directory: `cd my-movie-list`
 
 3. Open index.html in your web browser.
